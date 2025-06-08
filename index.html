@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WEBGIS INDUSTRI KABUPATEN BEKASI</title>
+  <link rel="icon" type="image/png" href="asset/Kab_Bekasi.png">
+
+  <!-- Leaflet & Plugins -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-search/dist/leaflet-search.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <img src="asset/Kab_Bekasi.png" alt="Logo">
+      <h2>KABUPATEN BEKASI</h2>
+
+      <nav class="menu">
+        <a href="#map-section">🗺️ Peta</a>
+        <a href="#data-section">📊 Data</a>
+        <a href="#author-section">👤 Tentang</a>
+
+        <div class="statistik-box">
+          <div class="profil-bekasi">
+            <h4>📈 Statistik Kabupaten Bekasi</h4>
+            <p>Luas wilayah: <strong>1.273 km²</strong></p>
+            <p>Kecamatan: <strong>23</strong></p>
+            <p>Penduduk: <strong>±3.7 Juta Jiwa</strong></p>
+          </div>
+
+          <h4>🏙️ Secara Keseluruhan</h4>
+          <div class="statistik-item">
+            <span>Kecamatan Penduduk Terpadat</span>
+            <strong>Cikarang Barat</strong>
+          </div>
+          <div class="statistik-item">
+            <span>Kecamatan Penduduk Terjarang</span>
+            <strong>Sukatani</strong>
+          </div>
+
+          <h4>🌐 Peta Cepat</h4>
+          <button onclick="location.reload()">🔄 Reset Peta</button>
+
+          <!-- Jam Digital -->
+          <div class="jam-digital">
+            <h4>🕒 Kabupaten Bekasi saat ini</h4>
+            <p id="jam">Memuat...</p>
+          </div>
+
+          <!-- Lokasi Pengguna -->
+          <div class="lokasi-user">
+            <h4>📍 Lokasi Anda</h4>
+            <p id="lokasi">Mengambil lokasi...</p>
+          </div>
+        </div>
+      </nav>
+
+      <button id="toggle-mode">🌞 Dark Mode</button>
+    </aside>
+
+    <main class="main-content">
+      <section class="hero-banner">
+        <div class="hero-text">
+          <h1>SEBARAN INDUSTRI KABUPATEN BEKASI</h1>
+          <p>Pemetaan interaktif industri, batas wilayah & informasi spasial</p>
+        </div>
+      </section>
+
+      <section id="map-section">
+        <h2>PETA</h2>
+        <div style="text-align:center; margin: 10px 0;">
+          <select id="filter-tipe">
+            <option value="all">Semua Tipe Industri</option>
+            <!-- Opsi lainnya -->
+          </select>
+        </div>
+        <div id="map" style="width: 100%; height: 500px;"></div>
+
+      </section>
+
+      <section id="data-section">
+        <h2>DESKRIPSI DATA</h2>
+        <div class="data-grid">
+          <div class="card">
+            <img src="asset/Industri.jpeg" alt="Industri">
+            <h3>Titik Industri</h3>
+            <p>Data lokasi industri berdasarkan nama, tipe dan alamat untuk mendukung analisis spasial & perencanaan wilayah.</p>
+          </div>
+          <div class="card">
+            <img src="asset/Jalan.jpeg" alt="Batas">
+            <h3>Batas Wilayah</h3>
+            <p>Menampilkan batas administratif antar kecamatan di Bekasi sebagai referensi peta wilayah.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="author-section" class="author-area">
+        <img src="asset/Foto Elis.jpg" alt="Elis">
+        <h3>Elis Lisnawati</h3>
+        <p>WebGIS ini dikembangkan secara mandiri oleh Elis Lisnawati, mahasiswa Program Studi Sains Informasi Geografi, Universitas Pendidikan Indonesia, sebagai bagian dari Project akhir mata kuliah WEBGIS. Fokus utama peta ini adalah menampilkan sebaran industri di Kabupaten Bekasi sebagai bentuk kontribusi terhadap pemanfaatan teknologi geospasial dalam mendukung transparansi dan perencanaan wilayah.</p>
+      </section>
+
+      <footer id="footer">
+        <p>© 2025 | elisslisnawati@upi.edu | +62 899 8992 187</p>
+        <a href="https://www.instagram.com/elysnaaa_/" target="_blank">
+          <i class="fab fa-instagram"></i>@elysnaaa_
+        </a>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Semua script JS digabung di sini -->
+  <script>
+    // Jam Digital
+    function updateJam() {
+      const now = new Date();
+      const jam = now.toLocaleTimeString('id-ID', { hour12: false });
+      document.getElementById('jam').textContent = jam;
+    }
+    setInterval(updateJam, 1000);
+    updateJam();
+
+    // Lokasi Pengguna dengan Geolocation API
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude.toFixed(4);
+          const lon = position.coords.longitude.toFixed(4);
+          document.getElementById("lokasi").textContent = `Lat: ${lat}, Lon: ${lon}`;
+        },
+        (error) => {
+          document.getElementById("lokasi").textContent = "Izin lokasi ditolak.";
+        }
+      );
+    } else {
+      document.getElementById("lokasi").textContent = "Geolokasi tidak didukung.";
+    }
+
+    // Fungsi konversi DMS ke Decimal
+    function dmsToDecimal(dmsStr) {
+      const regex = /(\d+)°(\d+)'([\d.]+)"?([NSEW])/i;
+      const parts = dmsStr.match(regex);
+      if (!parts) {
+        throw new Error("Format DMS tidak valid: " + dmsStr);
+      }
+
+      const degrees = parseInt(parts[1], 10);
+      const minutes = parseInt(parts[2], 10);
+      const seconds = parseFloat(parts[3]);
+      const direction = parts[4].toUpperCase();
+
+      let decimal = degrees + minutes / 60 + seconds / 3600;
+
+      if (direction === "S" || direction === "W") {
+        decimal = -decimal;
+      }
+
+      return decimal;
+    }
+
+    // Contoh koordinat DMS
+    const latDMS = `6°13'58.4"S`;
+    const lonDMS = `107°08'36.8"E`;
+
+    const latitude = dmsToDecimal(latDMS);
+    const longitude = dmsToDecimal(lonDMS);
+
+    console.log("Latitude decimal:", latitude);
+    console.log("Longitude decimal:", longitude);
+
+    // Kalau ingin tampil di halaman, bisa pakai ini:
+    // document.getElementById("lokasi").textContent = `Lat: ${latitude}, Lon: ${longitude}`;
+  </script>
+
+  <!-- JS Plugins & Script -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.js"></script>
+  <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+  <script src="https://unpkg.com/leaflet-search/dist/leaflet-search.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
